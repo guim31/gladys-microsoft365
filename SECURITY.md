@@ -28,8 +28,18 @@ Gladys before reporting a problem.
 
 ## Scope
 
-In scope: the code of this repository and the Docker image it publishes.
+In scope: the code of this repository and the Docker image it publishes, in particular:
+
+- what is stored in `/data`: `tokens.json` (mode 600) holds the Microsoft **refresh token**, the client
+  ID and tenant it was issued for, and the account id and display name; `state.json` holds the Graph
+  ids of the calendars and lists and the ids of the tasks already announced as overdue. No event and
+  no task content is stored. The access token lives in memory only;
+- secrets in logs: no token, device code or client ID may ever be logged, at any level;
+- network: the container only talks to `login.microsoftonline.com` and `graph.microsoft.com` over
+  HTTPS, and follows Graph paging links only when they point to `graph.microsoft.com`;
+- the permissions requested from Microsoft (`Calendars.ReadWrite`, `Tasks.ReadWrite`, `offline_access`,
+  `User.Read`).
 
 Out of scope: Gladys Assistant itself (see its
 [security policy](https://github.com/GladysAssistant/Gladys/security/policy)),
-and the third-party services and devices the integration talks to.
+Microsoft's services, and the app registration the user creates in Microsoft Entra.

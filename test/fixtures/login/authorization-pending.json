@@ -1,0 +1,9 @@
+{
+  "error": "authorization_pending",
+  "error_description": "AADSTS70016: The provided request has not yet been authorized by the user. The user must input their code. Trace ID: 00000000-0000-0000-0000-000000000000 Correlation ID: 00000000-0000-0000-0000-000000000000 Timestamp: 2026-10-15 20:23:33Z",
+  "error_codes": [70016],
+  "timestamp": "2026-10-15 20:23:33Z",
+  "trace_id": "00000000-0000-0000-0000-000000000000",
+  "correlation_id": "00000000-0000-0000-0000-000000000000",
+  "error_uri": "https://login.microsoftonline.com/error?code=70016"
+}

@@ -1,67 +1,234 @@
-# Template de démonstration
+# Microsoft 365
 
-Ceci est la documentation utilisateur de l'intégration. Gladys ré-héberge ce
-fichier et affiche un lien **Documentation** permanent vers lui dans l'écran
-de configuration (dans la langue de l'utilisateur, avec l'anglais en repli) —
-c'est au moment de configurer que l'utilisateur en a le plus besoin. Gardez
-les courtes indications d'accueil dans les blocs `section` du `config_schema`
-du manifest ; mettez ici le pas-à-pas détaillé (captures d'écran, dépannage…).
+Votre **agenda Outlook** et vos listes **Microsoft To Do** dans Gladys, par l'API officielle Microsoft
+Graph : occupé ou libre, l'évènement en cours et le suivant, les tâches ouvertes et en retard, des
+scènes qui démarrent avec un évènement ou ajoutent une tâche, et un widget avec l'agenda du jour.
 
-## Ce que vous obtenez
+Fonctionne avec un compte Microsoft personnel (Outlook.com, Hotmail, Live) et avec un compte
+professionnel ou scolaire (Microsoft 365). Complète l'intégration « Calendriers ICS » : ici, pas de
+lien public d'agenda, et Gladys peut aussi écrire (tâches, évènements).
 
-Six appareils de démonstration apparaissent après l'installation : une
-station météo (vraies données Open-Meteo), un interrupteur, une lampe
-variable, une prise connectée avec mesure de puissance, un détecteur de
-mouvement et une caméra.
+> **Développée sans compte de test : vos retours sont les bienvenus.** La connexion et chaque réponse
+> de Microsoft ont été construites d'après la documentation de Microsoft et des réponses enregistrées,
+> sans essai sur un vrai compte pour l'instant. Racontez-nous sur le forum Gladys comment ça se passe.
+>
+> Cette intégration est sans lien avec Microsoft. Microsoft, Microsoft 365, Outlook et To Do sont des
+> marques du groupe Microsoft.
+
+## Ce qu'il faut
+
+- Gladys 5.2.0 ou plus récent.
+- Un compte Microsoft avec une boîte aux lettres : Outlook.com pour un compte personnel, Exchange
+  Online pour un compte professionnel (To Do et l'agenda vivent dans la boîte aux lettres).
+- Votre propre **inscription d'application** dans Microsoft Entra (gratuite, 5 minutes, voir
+  ci-dessous). Microsoft demande que toute application qui lit un agenda soit inscrite ; avec la
+  vôtre, personne d'autre ne détient d'accès à vos données, et les quotas de Microsoft sont pour vous
+  seul.
+
+## Créer votre inscription d'application
+
+1. Ouvrez [Inscriptions d'applications](https://entra.microsoft.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade)
+   dans Microsoft Entra et connectez-vous. Avec un compte personnel, Microsoft peut d'abord demander
+   de créer un annuaire gratuit (un compte Azure gratuit) : l'inscription elle-même ne coûte rien.
+2. **Nouvelle inscription** : un nom au choix (par exemple « Gladys »). Types de comptes pris en
+   charge : **Comptes dans un annuaire d'organisation et comptes Microsoft personnels**. Laissez l'URI
+   de redirection vide. Inscrivez.
+3. Sur la page **Vue d'ensemble**, copiez l'**ID d'application (client)**.
+4. **Authentification** → Paramètres avancés → **Autoriser les flux de clients publics** : **Oui**,
+   puis Enregistrer. Sans cela, Microsoft refuse la connexion par code (AADSTS7000218).
+5. **Autorisations d'API** → Ajouter une autorisation → Microsoft Graph → **Autorisations
+   déléguées** : cochez `Calendars.ReadWrite`, `Tasks.ReadWrite` et `offline_access` (`User.Read` y
+   est déjà). Pas de secret client, pas de certificat : l'intégration est un client public.
+
+Un compte professionnel peut demander qu'un administrateur accorde ces autorisations pour
+l'organisation (**Accorder un consentement d'administrateur**). Si votre organisation n'admet que ses
+propres comptes, choisissez « Comptes dans cet annuaire d'organisation uniquement » à l'étape 2 et
+saisissez l'ID d'annuaire (locataire) dans le réglage **Locataire**.
 
 ## Configuration
 
-1. Ouvrez l'onglet **Configuration** de l'intégration.
-2. Renseignez la **latitude** et la **longitude** que la station météo de
-   démonstration doit observer (Paris par défaut), et choisissez votre unité
-   de température. L'**intervalle de rafraîchissement** règle la fréquence
-   de lecture de la station météo et de la puissance de la prise : toutes
-   les 5 minutes par défaut, toutes les minutes au plus.
-3. Enregistrez : les appareils apparaissent dans l'onglet **Découverte**,
-   prêts à être ajoutés.
+Dans Gladys, **Intégrations → Microsoft 365 → Configuration** :
 
-Le réglage **Préférer la connexion locale** pilote la prise de
-démonstration : elle affiche en badge le canal réellement utilisé (local ou
-cloud), avec un point orange quand elle fonctionne en mode dégradé (local
-refusé, bascule cloud).
+- **ID d'application (client)** : l'ID copié à l'étape 3.
+- **Locataire** : `common` (comptes personnels et professionnels). `consumers` pour les seuls comptes
+  personnels, `organizations` pour les seuls comptes professionnels, ou l'ID de votre annuaire.
+- **Lire Microsoft 365 toutes les** : 1 à 15 minutes (5 par défaut). Les déclencheurs gardent leur
+  précision à la minute quel que soit le choix.
+- **Mots-clés des déclencheurs de scène** : des mots à chercher dans les titres des évènements,
+  séparés par des virgules (voir les déclencheurs de scène).
+- **Langue des textes des appareils** : noms des fonctionnalités (fixés à l'ajout d'un appareil),
+  textes de l'évènement en cours et du suivant, messages. Français par défaut.
 
-## Actions
+Enregistrez, puis utilisez les actions sous le formulaire :
 
-- **Tester le fournisseur météo** — effectue une requête en direct vers
-  Open-Meteo et affiche la température et l'humidité actuelles sous le
-  bouton.
-- **Identifier un appareil** — choisissez un de vos appareils dans la liste
-  et il se signale (la lampe de démonstration « clignote » dans les logs).
+- **Se connecter** : affiche un code et une page Microsoft (`https://login.microsoft.com/device`).
+  Ouvrez la page sur n'importe quel appareil, saisissez le code dans les 15 minutes et connectez-vous
+  avec votre compte Microsoft. L'état de l'écran Configuration affiche le code en attendant, puis
+  passe à connecté. Les appareils apparaissent dans l'onglet **Découverte**.
+- **Vérifier la connexion** : indique le compte connecté et combien de calendriers et de listes To Do
+  il contient, et rafraîchit l'onglet Découverte.
+- **Se déconnecter** : supprime les jetons Microsoft de Gladys. À faire avant de se connecter avec un
+  autre compte. Pour retirer aussi l'accès côté Microsoft, supprimez l'application des
+  [applications de votre compte](https://account.live.com/consent/Manage) ou de Mes applications
+  (compte professionnel).
 
-## Scènes
+La session dure tant qu'elle sert : Microsoft y met fin après 90 jours sans utilisation, ou quand le
+mot de passe change ou que l'accès est révoqué. L'état demande alors de se reconnecter.
 
-L'intégration ajoute ses propres cartes à l'éditeur de scènes (Gladys 5.1
-ou plus récent), dans la catégorie **Intégrations** :
+## Appareils
 
-- **Mouvement détecté** (déclencheur) — lance la scène quand un détecteur
-  de démonstration voit bouger quelque chose. Choisissez éventuellement le
-  détecteur et ce qui a bougé (personne, animal) ; laissés vides, toute
-  détection correspond. Les actions suivantes peuvent lire ce qui a bougé
-  avec `{{triggerEvent.data.target}}`.
-- **Identifier un appareil** (action) — fait se signaler l'appareil choisi.
-  Elle indique si l'appareil a pu se signaler, pour que les actions
-  suivantes puissent en dépendre.
+L'onglet **Découverte** propose un appareil par calendrier Outlook et un par liste To Do du compte.
+Ajoutez ceux que vous voulez : seuls ceux-là sont lus.
 
-## Tableau de bord
+### Calendrier Outlook
 
-Ajoutez le widget **État de la démo** à un tableau de bord : il affiche en
-direct la température de la station météo et la puissance de la prise du
-bureau, la connexion utilisée par la prise (en orange si dégradée) et la
-position observée. Son bouton **Identifier la lampe** fait se signaler la
-lampe de démonstration.
+| Fonctionnalité     | Valeur                                                                                                 |
+| ------------------ | ------------------------------------------------------------------------------------------------------ |
+| Occupé             | 1 pendant un évènement affiché occupé, provisoire ou absent du bureau ; 0 si libre ou travail ailleurs |
+| Absent du bureau   | 1 pendant un évènement affiché absent du bureau (congés, rendez-vous)                                  |
+| Évènement en cours | titre de l'évènement en cours (un évènement à heure fixe d'abord), ou « Aucun »                        |
+| Prochain évènement | titre et début du prochain évènement à deux semaines (« Dentiste · demain 14:00 »), ou « Aucun »       |
+
+Les évènements annulés et les invitations que vous avez refusées sont ignorés. Un évènement d'une
+journée entière couvre toute sa journée.
+
+### Liste To Do
+
+| Fonctionnalité          | Valeur                                                |
+| ----------------------- | ----------------------------------------------------- |
+| Tâches ouvertes         | tâches non terminées                                  |
+| Tâches en retard        | tâches ouvertes dont l'échéance est avant aujourd'hui |
+| Tâches pour aujourd'hui | tâches ouvertes dont l'échéance est aujourd'hui       |
+
+Une tâche due aujourd'hui n'est pas en retard avant demain : les compteurs changent à minuit.
+
+## Widget du tableau de bord
+
+**Agenda et tâches** : le reste de la journée dans Outlook (8 évènements au plus, « En cours » sur
+celui qui a lieu), les compteurs de tâches ouvertes et en retard d'une liste To Do en tuiles en
+direct, ses cinq premières tâches ouvertes avec leur échéance (en rouge si en retard, en orange si
+pour aujourd'hui), et un bouton **Ajouter une tâche** qui ouvre un petit formulaire (titre,
+échéance). Réglages : le calendrier (vide : tous les calendriers ajoutés) et la liste To Do (vide :
+la liste, s'il n'y en a qu'une d'ajoutée).
+
+## Déclencheurs de scène
+
+Le cœur ne compare les filtres que par égalité : « le titre contient un mot » est décidé par
+l'intégration, d'après le réglage **Mots-clés des déclencheurs de scène**. Un évènement dont le titre
+contient un de ces mots (sans tenir compte des majuscules ni des accents) porte le premier trouvé ;
+une scène filtre dessus en tapant le mot-clé tel qu'écrit dans les réglages.
+
+Chaque déclencheur d'évènement transmet à la scène : le titre de l'évènement, le lieu, le début, la
+fin, le calendrier et le mot-clé trouvé.
+
+### Un évènement Outlook commence
+
+Quand un évènement d'un calendrier ajouté débute. Filtres : calendrier, mot-clé.
+
+### Un évènement Outlook se termine
+
+Quand un évènement est fini. Filtres : calendrier, mot-clé.
+
+### Évènement Outlook dans N minutes
+
+5, 10, 15, 30, 60 ou 120 minutes avant le début d'un évènement (hors journées entières). Filtres :
+minutes (obligatoire), calendrier, mot-clé.
+
+### Tâche To Do en retard
+
+Quand une tâche ouverte dépasse son échéance (à la première vérification après minuit). Filtre : la
+liste To Do. Transmet la tâche, son échéance et la liste. Les tâches déjà en retard à la première
+lecture de la liste ne sont pas annoncées, et une tâche n'est annoncée qu'une fois.
+
+Les déclencheurs sont calculés toutes les 30 secondes à partir des évènements déjà lus : un évènement
+se déclenche à son heure même si Microsoft 365 n'est lu que toutes les 15 minutes. Un début manqué
+de plus de 5 minutes (Gladys ou l'intégration arrêtés) n'est pas annoncé en retard, et rien n'est
+annoncé à partir de données vieilles de plus de 2 heures.
+
+## Actions de scène
+
+### Ajouter une tâche To Do
+
+Dans une liste To Do ajoutée à Gladys, avec un titre (variables de scène acceptées) et une échéance
+facultative en jours (0 : aujourd'hui, 1 : demain). Renvoie le titre.
+
+### Terminer une tâche To Do
+
+Termine la tâche ouverte dont le titre est le texte (sans tenir compte des majuscules ni des
+accents), ou la seule dont le titre le contient. Plusieurs correspondances partielles : rien n'est
+terminé. Renvoie « Tâche terminée (1 oui, 0 non) » et le titre de la tâche.
+
+### Ajouter un évènement Outlook
+
+Ajoute un évènement « occupé » à un calendrier, maintenant ou dans jusqu'à 7 jours (en minutes),
+d'une durée de 5 minutes à 24 heures. Renvoie l'heure de début.
+
+## Exemples de scènes
+
+- **Télétravail** : mot-clé `Télétravail`. Déclencheur « Un évènement Outlook commence », mot-clé
+  `Télétravail` → chauffage du bureau en confort ; « Un évènement Outlook se termine » → retour en éco.
+- **Partir à l'heure** : déclencheur « Évènement Outlook dans N minutes », 30 minutes, mot-clé
+  `Dentiste` → message « {{triggerEvent.data.title}} à {{triggerEvent.data.start}},
+  {{triggerEvent.data.location}} ».
+- **Ne pas déranger** : la fonctionnalité « Occupé » du calendrier du travail passe à 1 → sonnette
+  coupée, une lampe devant le bureau passe au rouge ; retour à 0 → normal.
+- **Liste de courses** : un bouton ou une commande vocale → « Ajouter une tâche To Do » « Lait » à
+  la liste « Courses ».
+- **Corvées** : déclencheur « Tâche To Do en retard » sur la liste « Maison » → notification
+  « {{triggerEvent.data.title}} est en retard ».
+
+## Rafraîchissement et limites de Microsoft
+
+L'intégration lit Microsoft Graph elle-même, avec son propre minuteur (elle ne compte pas sur
+l'interrogation de Gladys) : une requête par calendrier ou liste ajouté et par période, plus une par
+tranche de 200 évènements ou 100 tâches. Microsoft autorise 10 000 requêtes par 10 minutes et 4 à la
+fois pour une application et une boîte aux lettres : avec une période d'une minute et 10 appareils,
+l'intégration en utilise 100. Les requêtes partent une par une. Quand Microsoft demande de ralentir
+(HTTP 429 avec `Retry-After`), l'intégration attend le temps demandé, sans aucune requête entre-temps.
+
+Les valeurs ne sont publiées que lorsqu'elles changent, et toutes les 6 heures pour que Gladys ne les
+montre jamais comme anciennes. L'usage de Microsoft Graph suit les
+[conditions d'utilisation des API Microsoft](https://learn.microsoft.com/legal/microsoft-apis/terms-of-use).
 
 ## Dépannage
 
-L'intégration journalise tout ce qu'elle fait : consultez les logs de
-l'intégration depuis l'interface Gladys (ou `docker logs` sur l'hôte) avec
-`LOG_LEVEL=debug` pour le détail complet.
+- **« Microsoft a refusé la connexion (invalid_request (AADSTS50059)) »**, ou **AADSTS700016** : l'ID client est inconnu,
+  ou l'application est inscrite pour une seule organisation alors que le locataire est `common` :
+  vérifiez l'ID, ou saisissez l'ID d'annuaire comme locataire.
+- **AADSTS7000218** : « Autoriser les flux de clients publics » n'est pas activé (étape 4).
+- **AADSTS65001 ou « consentement »** : un compte professionnel dont l'administrateur doit accorder
+  les autorisations.
+- **Le code a expiré** : il dure 15 minutes ; relancez « Se connecter ».
+- **« La session Microsoft a expiré ou a été révoquée »** : relancez « Se connecter ».
+- **Une liste To Do ou un calendrier professionnel en erreur** : le compte doit avoir une boîte aux
+  lettres Exchange Online (le To Do d'un compte professionnel sans boîte n'est pas joignable par
+  Graph).
+- **Aucun appareil dans l'onglet Découverte** : lancez « Vérifier la connexion », puis le scan de
+  l'onglet Découverte.
+- **Journaux** : l'intégration ne journalise que son cycle de vie et les problèmes (une fois quand ils
+  commencent, une fois quand ils finissent). `LOG_LEVEL=debug` montre le reste. Les jetons et les codes
+  ne sont jamais journalisés.
+
+## Limites
+
+- Un seul compte Microsoft par installation (celui de l'administrateur), pas un par utilisateur de
+  Gladys.
+- L'agenda est lu d'hier à deux semaines ; aucun évènement dans la vue Calendrier de Gladys
+  (l'intégration « Calendriers ICS » le fait).
+- Les noms des fonctionnalités sont fixés à l'ajout d'un appareil ; changer la langue ensuite ne
+  renomme rien.
+- Les calendriers partagés apparaissent si Microsoft les liste dans les calendriers du compte ; les
+  calendriers de groupe, non.
+- Pas de rappels, pas de participants, pas de modification d'évènement au-delà de « Ajouter un
+  évènement Outlook ».
+- Développée sans compte de test : les vraies réponses d'un compte Microsoft peuvent encore différer
+  sur un détail.
+
+## Confidentialité et sécurité
+
+- Le jeton de rafraîchissement Microsoft reste dans Gladys, dans `/data/tokens.json` (lisible par le
+  seul conteneur) ; le jeton d'accès, valable une heure, reste en mémoire. Rien d'autre n'est stocké :
+  ni évènement, ni tâche.
+- L'intégration ne parle qu'à `login.microsoftonline.com` et `graph.microsoft.com`.
+- Autorisations demandées : `Calendars.ReadWrite`, `Tasks.ReadWrite`, `offline_access` et
+  `User.Read` (votre nom et l'identifiant du compte, pour nommer la session).

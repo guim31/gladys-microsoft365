@@ -1,0 +1,77 @@
+{
+  "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#users('00000000-0000-0000-0000-000000000001')/calendars('AAMkAGI2TGuLAAA%3D')/calendarView(id,subject,start,end,isAllDay,showAs,isCancelled,location,responseStatus)",
+  "value": [
+    {
+      "@odata.etag": "W/\"DwAAABYAAAB8nAmEwXk9QaXsbNy6G6Q7AAAAADfS\"",
+      "id": "AAMkAGI2TGuLAAA-standup-20261012",
+      "subject": "Point d'équipe",
+      "isAllDay": false,
+      "isCancelled": false,
+      "showAs": "busy",
+      "responseStatus": { "response": "accepted", "time": "2026-10-01T08:00:00Z" },
+      "start": { "dateTime": "2026-10-12T07:30:00.0000000", "timeZone": "UTC" },
+      "end": { "dateTime": "2026-10-12T08:00:00.0000000", "timeZone": "UTC" },
+      "location": { "displayName": "Salle Rivoli", "locationType": "default" }
+    },
+    {
+      "@odata.etag": "W/\"DwAAABYAAAB8nAmEwXk9QaXsbNy6G6Q7AAAAADfT\"",
+      "id": "AAMkAGI2TGuLAAA-remote-20261012",
+      "subject": "Télétravail",
+      "isAllDay": true,
+      "isCancelled": false,
+      "showAs": "workingElsewhere",
+      "responseStatus": { "response": "organizer", "time": "0001-01-01T00:00:00Z" },
+      "start": { "dateTime": "2026-10-11T22:00:00.0000000", "timeZone": "UTC" },
+      "end": { "dateTime": "2026-10-12T22:00:00.0000000", "timeZone": "UTC" },
+      "location": { "displayName": "", "locationType": "default" }
+    },
+    {
+      "@odata.etag": "W/\"DwAAABYAAAB8nAmEwXk9QaXsbNy6G6Q7AAAAADfU\"",
+      "id": "AAMkAGI2TGuLAAA-cancelled-20261012",
+      "subject": "Annulé : Revue de projet",
+      "isAllDay": false,
+      "isCancelled": true,
+      "showAs": "free",
+      "responseStatus": { "response": "accepted", "time": "2026-10-02T09:00:00Z" },
+      "start": { "dateTime": "2026-10-12T09:00:00.0000000", "timeZone": "UTC" },
+      "end": { "dateTime": "2026-10-12T10:00:00.0000000", "timeZone": "UTC" },
+      "location": { "displayName": "Teams", "locationType": "default" }
+    },
+    {
+      "@odata.etag": "W/\"DwAAABYAAAB8nAmEwXk9QaXsbNy6G6Q7AAAAADfV\"",
+      "id": "AAMkAGI2TGuLAAA-declined-20261012",
+      "subject": "Afterwork",
+      "isAllDay": false,
+      "isCancelled": false,
+      "showAs": "free",
+      "responseStatus": { "response": "declined", "time": "2026-10-05T16:00:00Z" },
+      "start": { "dateTime": "2026-10-12T16:00:00.0000000", "timeZone": "UTC" },
+      "end": { "dateTime": "2026-10-12T18:00:00.0000000", "timeZone": "UTC" },
+      "location": { "displayName": "", "locationType": "default" }
+    },
+    {
+      "@odata.etag": "W/\"DwAAABYAAAB8nAmEwXk9QaXsbNy6G6Q7AAAAADfW\"",
+      "id": "AAMkAGI2TGuLAAA-dentist-20261012",
+      "subject": "Dentiste",
+      "isAllDay": false,
+      "isCancelled": false,
+      "showAs": "oof",
+      "responseStatus": { "response": "organizer", "time": "0001-01-01T00:00:00Z" },
+      "start": { "dateTime": "2026-10-12T12:00:00.0000000", "timeZone": "UTC" },
+      "end": { "dateTime": "2026-10-12T12:45:00.0000000", "timeZone": "UTC" },
+      "location": { "displayName": "Cabinet du Dr Durand", "locationType": "default" }
+    },
+    {
+      "@odata.etag": "W/\"DwAAABYAAAB8nAmEwXk9QaXsbNy6G6Q7AAAAADfX\"",
+      "id": "AAMkAGI2TGuLAAA-lunch-20261013",
+      "subject": "Déjeuner avec Léa",
+      "isAllDay": false,
+      "isCancelled": false,
+      "showAs": "tentative",
+      "responseStatus": { "response": "tentativelyAccepted", "time": "2026-10-06T10:00:00Z" },
+      "start": { "dateTime": "2026-10-13T10:30:00.0000000", "timeZone": "UTC" },
+      "end": { "dateTime": "2026-10-13T12:00:00.0000000", "timeZone": "UTC" },
+      "location": { "displayName": "", "locationType": "default" }
+    }
+  ]
+}

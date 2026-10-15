@@ -16,8 +16,8 @@ its only runtime dependency. It started from the official JavaScript template.
 ```bash
 npm install
 npm test                                  # node --test, the built-in runner
-node --test test/devices.test.js          # one file
-node --test --test-name-pattern "plug"    # tests whose name matches
+node --test test/monitor.test.js          # one file
+node --test --test-name-pattern "overdue" # tests whose name matches
 npm run lint                              # ESLint
 npm run format:check                      # Prettier, as the CI runs it
 npm run format                            # Prettier, fix in place
@@ -31,16 +31,26 @@ pushing.
 ## Architecture
 
 ```
-index.js                          SDK wiring only: handlers registered before connect()
-src/devices/index.js              registry of the device blueprints + dispatch helpers
-src/devices/<type>.js             one device type per file (buildDevice, onPoll, onSetValue...)
-src/scenes.js                     scene action handlers (manifest `scene_actions`)
-src/widgets.js                    dashboard widget handlers (manifest `widgets`)
+index.js                          SDK wiring only: src/app.js registers the handlers before connect()
+src/app.js                        every SDK handler: actions, scene actions, widget, devices, lifecycle
+src/monitor.js                    30 s timer, Graph reads, states, scene events, sign-in, discovery
+src/auth.js                       device code sign-in, refresh token rotation (login.microsoftonline.com)
+src/graph.js                      Microsoft Graph client: serialized, Retry-After, paging, endpoints
+src/calendar.js                   occurrences -> busy / out of office / current / next, trigger instants
+src/todo.js                       open tasks -> counts, overdue, finding a task by title
+src/devices.js                    the discovered devices (one per calendar, one per To Do list)
+src/scenes.js                     scene trigger data, scene actions (add/complete task, add event)
+src/widgets.js                    dashboard widget "agenda" (+ "Add a task" form button)
+src/i18n.js, src/format.js        every text of the code in en/fr/de/es; dates for people
+src/time.js                       Graph dateTimeTimeZone <-> instants and calendar dates
+src/store.js                      /data/tokens.json (mode 600) and /data/state.json
+src/issues.js                     repeated failures logged once, and once when over
 src/config.js                     DEFAULT_CONFIG (mirrors the manifest defaults) + normalization
-src/weather.js                    example driver (Open-Meteo)
-gladys-assistant-integration.json manifest: name, config_schema, actions, image...
-docs/en.md, docs/fr.md            user documentation, re-hosted by Gladys (mandatory)
-test/                             node --test, against the SDK's fake Gladys (integration-sdk/testing)
+scripts/probe.mjs                 real endpoints, read-only, up to the refusal of an invented client ID
+gladys-assistant-integration.json manifest: config_schema, actions, scenes, widget
+docs/{en,fr,de,es}.md             user documentation, re-hosted by Gladys (same sections)
+test/helpers/world.js             SDK fake Gladys + fake Microsoft (injected fetch) + clock, TZ=Europe/Paris
+test/fixtures/                    Graph reference examples (CC BY 4.0), recorded login answers
 .github/scripts/release.mjs       release helpers (manifest bump, changelog), tested in test/
 ```
 
@@ -70,8 +80,10 @@ test/                             node --test, against the SDK's fake Gladys (in
   `type: "provider"`: 5.1.0). `test/manifest.test.js` ties the manifest to the
   code (defaults, action, scene and widget handlers): change both sides
   together.
-- **User-facing text** is bilingual (English and French): action messages,
-  manifest texts, and `docs/en.md` / `docs/fr.md`, kept in sync.
+- **User-facing text** exists in four languages (English, French, German with
+  "du", Spanish with "usted"): action messages, manifest texts, widget texts,
+  feature names, and `docs/en.md`, `docs/fr.md`, `docs/de.md`, `docs/es.md`
+  with the same sections. `test/i18n.test.js` enforces it.
 - **Style.** Prettier formats, ESLint catches mistakes. Comments explain why,
   in English. Tests never touch the network.
 
@@ -233,3 +245,53 @@ long, et sur un « Sie »/« Ihr… » de politesse en allemand. Le store exige 
 - Docs `en`, `fr`, `de`, `es` avec les mêmes sections.
 - Chauffe, ouverture, sécurité : ne rien rendre pilotable « comme un thermostat » ou par un assistant
   vocal quand une erreur serait dangereuse (leçon d'OctoPrint).
+
+## Pièges découverts sur cette intégration (Microsoft 365)
+
+**Plateforme d'identité Microsoft (relevé le 15/10/2026 sur `login.microsoftonline.com`)**
+
+- Flux « device code » : `verification_uri` vaut désormais `https://login.microsoft.com/device`
+  (plus `microsoft.com/devicelogin`), `expires_in` 900, `interval` 5, code de 8 à 9 caractères. Pas de
+  `verification_uri_complete` : le code doit être affiché. Le paramètre `?mkt=fr-FR` localise
+  `message`, mais l'intégration compose son propre texte dans les quatre langues.
+- Un client ID inconnu répond 400 `invalid_request` **AADSTS50059** sur `common` et `organizations`,
+  400 `unauthorized_client` **AADSTS700016** sur `consumers` (et une fois un 503 AADSTS70012
+  transitoire). `offline_access` seul est refusé (AADSTS70011) : il faut au moins une ressource
+  (`User.Read`…). Un `device_code` inconnu : 400 `invalid_grant` AADSTS7000014 ; en attente :
+  `authorization_pending` AADSTS70016.
+- `error_description` contient trace id, correlation id et horodatage : ne journaliser que `error` et
+  le premier `error_codes`.
+- Le refresh token **tourne** : chaque renouvellement peut en rendre un nouveau, à enregistrer, sinon
+  l'ancien finit refusé. `invalid_grant` au renouvellement = reconnexion nécessaire.
+- L'application doit avoir « Autoriser les flux de clients publics » (sinon AADSTS7000218). Un compte
+  personnel peut devoir créer un annuaire Entra (compte Azure gratuit) avant d'inscrire une
+  application : à confirmer sur un vrai compte.
+
+**Microsoft Graph**
+
+- `graph.microsoft.com` est **refusé par le proxy** des sessions de code : tout Graph est testé sur
+  les exemples de la référence (CC BY 4.0) et un faux serveur ; `scripts/probe.mjs` vérifie le 401
+  depuis une machine qui a le réseau.
+- Outlook : 10 000 requêtes / 10 min et **4 simultanées** par application et boîte aux lettres ; 429
+  ou 503/504 avec `Retry-After`. Le client sérialise tout et bloque tant que `Retry-After` court.
+- `Prefer: outlook.timezone="UTC"` sur `calendarView` ; un évènement d'une journée entière arrive
+  alors à **minuit converti** (minuit de Paris = 22:00 UTC la veille). Une date To Do (`dueDateTime`)
+  aussi (l'exemple de la référence : `2020-08-25T04:00` UTC pour minuit à New York). Lire ces dates
+  par le **minuit le plus proche** (`graphDate`), écrire l'échéance comme le minuit local en UTC.
+- Les ids Graph sont longs et contiennent `=`, `+`, `/` : `encodeURIComponent` dans les chemins, et
+  les `external_id` dérivent d'une empreinte (compte + id Graph), l'id Graph voyageant dans le
+  paramètre d'appareil `GRAPH_ID`.
+- To Do d'un compte professionnel exige une boîte Exchange Online.
+
+**Cœur Gladys**
+
+- Les filtres de déclencheur ne font qu'égalité : « le titre contient » passe par une liste de
+  mots-clés dans la configuration, et l'évènement porte le mot-clé trouvé.
+- « Dans N minutes » : un seul déclencheur, champ `minutes` **obligatoire** (sinon une scène sans
+  filtre tournerait une fois par délai), un évènement par délai.
+- Les libellés des champs d'un formulaire de bouton de widget doivent être des objets multilingues
+  avec `en` (`validateWidgetContent` refuse une chaîne).
+- Le `heartbeat` de `publishChangedStates` se date avec `Date.now()` du SDK, pas avec l'horloge
+  injectée : le test le fait avancer par `t.mock.timers` (`Date`).
+- Dans les tests, vider `gladys.fake.requests` efface aussi `discoveredDevices` et `sceneEvents`
+  (ils en sont dérivés).

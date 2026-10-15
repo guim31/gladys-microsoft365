@@ -1,0 +1,8 @@
+{
+  "error": "invalid_grant",
+  "error_description": "AADSTS7000014: The provided value for the input parameter 'device_code' is not valid. Trace ID: 00000000-0000-0000-0000-000000000000 Correlation ID: 00000000-0000-0000-0000-000000000000 Timestamp: 2026-10-15 20:23:15Z",
+  "error_codes": [7000014],
+  "timestamp": "2026-10-15 20:23:15Z",
+  "trace_id": "00000000-0000-0000-0000-000000000000",
+  "correlation_id": "00000000-0000-0000-0000-000000000000"
+}

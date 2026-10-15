@@ -1,0 +1,8 @@
+{
+  "error": "invalid_request",
+  "error_description": "AADSTS50059: No tenant-identifying information found in either the request or implied by any provided credentials. Trace ID: 00000000-0000-0000-0000-000000000000 Correlation ID: 00000000-0000-0000-0000-000000000000 Timestamp: 2026-10-15 20:23:07Z",
+  "error_codes": [50059],
+  "timestamp": "2026-10-15 20:23:07Z",
+  "trace_id": "00000000-0000-0000-0000-000000000000",
+  "correlation_id": "00000000-0000-0000-0000-000000000000"
+}

@@ -1,0 +1,47 @@
+{
+  "value": [
+    {
+      "@odata.etag": "W/\"xzyPKP0BiUGgld+lMKXwbQAAgdhkVw==\"",
+      "importance": "low",
+      "isReminderOn": false,
+      "status": "notStarted",
+      "title": "Linked entity new task 1",
+      "createdDateTime": "2020-07-08T11:15:19.9359889Z",
+      "lastModifiedDateTime": "2020-07-08T11:15:20.0614375Z",
+      "categories": ["Important", "Urgent"],
+      "id": "AQMkADAwATM0MDAAMS0yMDkyLWVjMzYtMDACLTAwCgBGAAAD",
+      "body": {
+        "content": "",
+        "contentType": "text"
+      },
+      "linkedResources": [
+        {
+          "applicationName": "Partner App Name",
+          "displayName": "Partner App Name",
+          "externalId": "teset1243434",
+          "id": "30911960-7321-4cba-9ba0-cdb68e2984c7"
+        }
+      ]
+    },
+    {
+      "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#tasks/$entity",
+      "@odata.etag": "W/\"s8/ERWT3WEeFpBGD0bDgAA+TWq9g==\"",
+      "importance": "low",
+      "isReminderOn": false,
+      "status": "notStarted",
+      "title": "Shop for dinner",
+      "createdDateTime": "2020-07-22T10:39:03.7937971Z",
+      "lastModifiedDateTime": "2020-07-22T12:02:10.8835421Z",
+      "categories": [],
+      "id": "721a35e2-35e2-721a-e235-1a72e2351a72",
+      "body": {
+        "content": "",
+        "contentType": "text"
+      },
+      "dueDateTime": {
+        "dateTime": "2020-08-25T04:00:00.0000000",
+        "timeZone": "UTC"
+      }
+    }
+  ]
+}

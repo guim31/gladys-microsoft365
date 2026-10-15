@@ -10,6 +10,8 @@ the notes of the version's GitHub Release.
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-10-15
+
 ### Added
 
 - Sign-in to a Microsoft account (personal or work) with the device code flow and your own Azure app
@@ -23,3 +25,6 @@ the notes of the version's GitHub Release.
 - Dashboard widget "Agenda and tasks", with an "Add a task" form (Gladys 5.2.0).
 - Refresh on the integration's own timer, Microsoft Graph throttling (`Retry-After`) honoured.
 - Documentation in English, French, German and Spanish.
+
+[Unreleased]: https://github.com/guim31/gladys-microsoft365/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/guim31/gladys-microsoft365/releases/tag/v1.0.1
